@@ -1059,20 +1059,24 @@ namespace EFCore.BulkExtensions
                     }
                     else if (entityNavigationOwnedDict.ContainsKey(property.Name) && !tableInfo.LoadOnlyPKColumn)
                     {
-                        var ownedProperties = property.PropertyType.GetProperties().Where(a => ownedEntitiesMappedProperties.Contains(property.Name + "_" + a.Name));
-                        foreach (var ownedProperty in ownedProperties)
+                        if (propertyValue != null)
                         {
-                            var columnName = $"{property.Name}_{ownedProperty.Name}";
-                            var ownedPropertyValue = tableInfo.FastPropertyDict[columnName].Get(propertyValue);
+                            var ownedProperties = property.PropertyType.GetProperties().Where(a => ownedEntitiesMappedProperties.Contains(property.Name + "_" + a.Name));
+                            foreach (var ownedProperty in ownedProperties)
+                            {
+                                var columnName = $"{property.Name}_{ownedProperty.Name}";
 
-                            if (tableInfo.ConvertibleProperties.ContainsKey(columnName))
-                            {
-                                var converter = tableInfo.ConvertibleProperties[columnName];
-                                columnsDict[columnName] = propertyValue == null ? null : converter.ConvertToProvider.Invoke(ownedPropertyValue);
-                            }
-                            else
-                            {
-                                columnsDict[columnName] = propertyValue == null ? null : ownedPropertyValue;
+                                var ownedPropertyValue = tableInfo.FastPropertyDict[columnName].Get(propertyValue);
+
+                                if (tableInfo.ConvertibleProperties.ContainsKey(columnName))
+                                {
+                                    var converter = tableInfo.ConvertibleProperties[columnName];
+                                    columnsDict[columnName] = propertyValue == null ? null : converter.ConvertToProvider.Invoke(ownedPropertyValue);
+                                }
+                                else
+                                {
+                                    columnsDict[columnName] = propertyValue == null ? null : ownedPropertyValue;
+                                }
                             }
                         }
                     }
